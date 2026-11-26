@@ -44,9 +44,9 @@ const bio: Record<Locale, React.ReactNode> = {
   en: (
     <>
       <p>
-        I build agents and agentic systems. At {DataGroup}, I work as an Automation Specialist.
-        I&apos;m developing {ShipperKit}, a platform for deploying apps, databases, and services on
-        your own Linux server. I also build mobile apps and work on marketing.
+        I build agents and agentic systems, work as an Automation Specialist at {DataGroup}, and
+        develop {ShipperKit}, a self-hosted platform for deploying apps, databases, and services.
+        Outside of that, I build mobile apps and experiment with marketing and growth.
       </p>
       <p>
         You can reach me on <A to={LINKS.github}>GitHub</A>, <A to={LINKS.x}>X</A>,{" "}
@@ -57,10 +57,10 @@ const bio: Record<Locale, React.ReactNode> = {
   hu: (
     <>
       <p>
-        Agenteket és rájuk épülő rendszereket készítek. A {DataGroup} csapatában Automation
-        Specialistként dolgozom. Fejlesztem a {ShipperKit} platformot, amellyel alkalmazásokat,
-        adatbázisokat és szolgáltatásokat telepíthetsz a saját Linux-szerveredre. Emellett
-        mobilappokat készítek és marketinggel foglalkozom.
+        Agenteket és rájuk épülő rendszereket készítek, a {DataGroup} csapatában pedig Automation
+        Specialistként dolgozom. Fejlesztem a {ShipperKit} platformot, amellyel saját szerverre
+        telepíthetsz alkalmazásokat, adatbázisokat és szolgáltatásokat. Emellett mobilappokat
+        készítek, és különféle marketing- és növekedési ötletekkel kísérletezem.
       </p>
       <p>
         Elérsz a <A to={LINKS.github}>GitHubon</A>, <A to={LINKS.x}>X-en</A>,{" "}

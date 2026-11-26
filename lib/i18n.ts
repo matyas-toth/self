@@ -3,7 +3,7 @@ export type Locale = "en" | "hu";
 export const dict = {
   en: {
     other: "hu",
-    role: "Automation Specialist",
+    role: "Omnineer",
     collections: "Collections",
     blog: "Blog",
     blogTitle: "Random Thoughts",
@@ -11,7 +11,7 @@ export const dict = {
   },
   hu: {
     other: "en",
-    role: "Automation Specialist",
+    role: "Omnineer",
     collections: "Gyűjtemények",
     blog: "Blog",
     blogTitle: "Kósza gondolatok",

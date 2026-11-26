@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter" 
 export const metadata: Metadata = {
   metadataBase: new URL("https://maty.as"),
   title: { default: "Mátyás Tóth", template: "%s · Mátyás Tóth" },
-  description: "I build agents and agentic systems. Automation Specialist at DATAGROUP. I develop ShipperKit and mobile apps, and work on marketing.",
+  description: "I build agents and agentic systems. Automation Specialist at DATAGROUP. ShipperKit, mobile apps, and experiments in marketing and growth.",
 };
 
 export const viewport: Viewport = {
