@@ -4,10 +4,15 @@ import { useEffect, useRef } from "react";
 
 // Glyphs ordered from light to dense.
 const RAMP = " .:;-=+()*xoO08X%#@";
+// Speed-line glyphs for the cursor swoosh: - ~ = (horizontal), | / \.
+const TRAIL = "-~=|/\\";
+const GLYPHS = RAMP + TRAIL;
 const CELL_W = 6.5;
 const CELL_H = 9;
 const FONT_SIZE = 9;
-const FPS = 14;
+const FPS = 24;
+const WIND = 0.06; // cloud drift, in noise units per second (~14px/s)
+const TRAIL_LIFE = 0.7; // seconds for the swoosh to fade to ~37%
 
 type RGB = [number, number, number];
 
@@ -25,6 +30,7 @@ const CLOUD: RGB = [255, 238, 228];
 const EDGE: RGB = [150, 96, 170];
 const WHITE: RGB = [255, 255, 255];
 const NIGHT: RGB = [12, 12, 13];
+const INK: RGB = [58, 36, 118];
 
 const mix = (a: RGB, b: RGB, t: number): RGB => [
   a[0] + (b[0] - a[0]) * t,
@@ -97,7 +103,6 @@ export function AsciiSky() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const atlas = document.createElement("canvas");
     const glyphs = document.createElement("canvas");
     const colors = document.createElement("canvas");
@@ -109,9 +114,55 @@ export function AsciiSky() {
     let cw = 0, ch = 0, cols = 0, rows = 0;
     let colorData: ImageData, bgData: ImageData;
     let grain = new Float32Array(0);
+    let trail = new Float32Array(0);
+    let trailGlyph = new Uint8Array(0);
     let dark = document.documentElement.classList.contains("dark");
-    let raf = 0, last = 0, visible = true;
+    let raf = 0, last = 0, prevDraw = 0, visible = true;
+    let pointer: { x: number; y: number } | null = null;
     const start = performance.now();
+
+    // Stamp speed-line glyphs along the pointer's path, angled to its direction.
+    function stamp(x0: number, y0: number, x1: number, y1: number) {
+      const dx = x1 - x0, dy = y1 - y0;
+      const len = Math.hypot(dx, dy);
+      if (len < 2) return;
+
+      let a = Math.atan2(dy, dx);
+      if (a < 0) a += Math.PI;
+      const sector = Math.floor(((a + Math.PI / 8) % Math.PI) / (Math.PI / 4));
+      const strength = Math.min(1, Math.max(0.45, len / 28));
+      const radius = len > 40 ? 2 : 1;
+      const nx = -dy / len, ny = dx / len;
+      const steps = Math.ceil(len / (CELL_W * 0.5));
+
+      for (let s = 0; s <= steps; s++) {
+        const f = s / steps;
+        const px = x0 + dx * f, py = y0 + dy * f;
+        for (let k = -radius; k <= radius; k++) {
+          const c = Math.round((px + nx * k * CELL_H) / CELL_W);
+          const r = Math.round((py + ny * k * CELL_H) / CELL_H);
+          if (c < 0 || r < 0 || c >= cols || r >= rows) continue;
+          const i = r * cols + c;
+          const v = strength * (0.55 + 0.45 * f) * (1 - Math.abs(k) / (radius + 1));
+          if (v <= trail[i]) continue;
+          trail[i] = v;
+          const g = grain[i];
+          trailGlyph[i] =
+            sector === 0 ? (g < 0.7 ? 0 : g < 0.85 ? 1 : 2)
+            : sector === 1 ? 5
+            : sector === 2 ? 3
+            : 4;
+        }
+      }
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      const rect = canvas!.getBoundingClientRect();
+      const x = e.clientX - rect.left, y = e.clientY - rect.top;
+      const inside = x >= 0 && x <= rect.width && y >= 0 && y <= rect.height * 0.75;
+      if (inside && pointer) stamp(pointer.x, pointer.y, x, y);
+      pointer = inside ? { x, y } : null;
+    }
 
     function setup() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -129,8 +180,10 @@ export function AsciiSky() {
 
       grain = new Float32Array(cols * rows);
       for (let i = 0; i < grain.length; i++) grain[i] = Math.random();
+      trail = new Float32Array(cols * rows);
+      trailGlyph = new Uint8Array(cols * rows);
 
-      atlas.width = cw * RAMP.length;
+      atlas.width = cw * GLYPHS.length;
       atlas.height = ch;
       const actx = atlas.getContext("2d")!;
       actx.clearRect(0, 0, atlas.width, atlas.height);
@@ -138,13 +191,16 @@ export function AsciiSky() {
       actx.font = `600 ${FONT_SIZE * dpr}px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
       actx.textAlign = "center";
       actx.textBaseline = "middle";
-      for (let i = 0; i < RAMP.length; i++) {
-        actx.fillText(RAMP[i], i * cw + cw / 2, ch / 2 + dpr * 0.5);
+      for (let i = 0; i < GLYPHS.length; i++) {
+        actx.fillText(GLYPHS[i], i * cw + cw / 2, ch / 2 + dpr * 0.5);
       }
     }
 
     function draw(now: number) {
       const time = (now - start) / 1000;
+      const dt = prevDraw ? Math.min(0.1, (now - prevDraw) / 1000) : 0;
+      prevDraw = now;
+      const decay = Math.exp(-dt / TRAIL_LIFE);
       const cd = colorData.data, bd = bgData.data;
       gctx.globalCompositeOperation = "source-over";
       gctx.clearRect(0, 0, glyphs.width, glyphs.height);
@@ -158,10 +214,11 @@ export function AsciiSky() {
           const px = c * CELL_W;
           const g = grain[i];
 
-          const n = fbm(px * 0.0042 + time * 0.018, py * 0.012, time * 0.025);
+          const n = fbm(px * 0.0042 - time * WIND, py * 0.012, time * 0.012);
           const cloud = smooth(0.5, 0.7, n) * band;
           const edge = cloud * (1 - cloud) * 4;
-          const fine = noise3(px * 0.03 + time * 0.05, py * 0.06, 7.3);
+          const fine = noise3(px * 0.03 - time * WIND * 7, py * 0.06, 7.3);
+          const tr = (trail[i] *= decay);
 
           const base = 0.66 + 0.3 * fine - 0.5 * smooth(0.55, 0.95, t);
           let density = dark
@@ -169,14 +226,22 @@ export function AsciiSky() {
             : base * (1 - cloud) + cloud * 0.12 + edge * 0.3;
           density += (g - 0.5) * 0.22;
           density = Math.min(1, Math.max(0, density));
-          const gi = Math.round(density * (RAMP.length - 1));
+          const swoosh = tr > 0.12;
+          const gi = swoosh
+            ? RAMP.length + trailGlyph[i]
+            : Math.round(density * (RAMP.length - 1));
 
           let col = sky(t + (fine - 0.5) * 0.05);
           col = mix(col, EDGE, edge * 0.25);
           col = mix(col, CLOUD, cloud * 0.8);
-          const back = dark
+          if (swoosh) {
+            const line = dark ? mix(sky(t), WHITE, 0.7) : mix(sky(t), INK, 0.55);
+            col = mix(col, line, Math.min(1, tr * 1.6));
+          }
+          let back = dark
             ? mix(mix(sky(t), NIGHT, 0.88), CLOUD, cloud * 0.08)
             : mix(mix(sky(t), WHITE, 0.74), CLOUD, cloud * 0.75);
+          if (tr > 0.01) back = mix(back, dark ? mix(sky(t), NIGHT, 0.7) : WHITE, tr * 0.45);
 
           const o = i * 4;
           cd[o] = col[0]; cd[o + 1] = col[1]; cd[o + 2] = col[2]; cd[o + 3] = 255;
@@ -208,7 +273,8 @@ export function AsciiSky() {
 
     setup();
     draw(performance.now());
-    if (!reduced) raf = requestAnimationFrame(loop);
+    raf = requestAnimationFrame(loop);
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
 
     const ro = new ResizeObserver(() => {
       setup();
@@ -227,6 +293,7 @@ export function AsciiSky() {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener("pointermove", onPointerMove);
       ro.disconnect();
       io.disconnect();
       mo.disconnect();
