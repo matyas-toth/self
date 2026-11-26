@@ -86,7 +86,7 @@ export function Home({ locale }: { locale: Locale }) {
           className="size-[46px] rounded-full object-cover"
         />
         <div className="leading-snug">
-          <div className="text-[17px] text-fg">Mátyás Tóth</div>
+          <h1 className="text-[17px] text-fg">Mátyás Tóth</h1>
           <div className="text-[15px] text-muted">{t.role}</div>
         </div>
       </section>

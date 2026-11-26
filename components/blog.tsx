@@ -62,5 +62,11 @@ export async function postParams() {
 
 export async function postMetadata(slug: string) {
   const post = await getPost(slug);
-  return post ? { title: post.meta.title, description: post.meta.description } : {};
+  if (!post) return {};
+
+  return {
+    title: post.meta.title,
+    description: post.meta.description,
+    alternates: { canonical: `/blog/${encodeURIComponent(post.meta.slug)}` },
+  };
 }

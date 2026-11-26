@@ -1,14 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AsciiSky } from "@/components/ascii-sky";
+import { siteUrl } from "@/lib/metadata";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://maty.as"),
+  metadataBase: siteUrl,
   title: { default: "Mátyás Tóth", template: "%s · Mátyás Tóth" },
   description: "I build agents and agentic systems. Automation Specialist at DATAGROUP. ShipperKit, mobile apps, and experiments in marketing and growth.",
+  openGraph: {
+    type: "website",
+    siteName: "Mátyás Tóth",
+    url: "./",
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630, alt: "Mátyás Tóth", type: "image/png" }],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {
