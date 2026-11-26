@@ -1,4 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#dc2626"/>
-  <text x="32" y="32" dy="0.35em" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="32" font-weight="600" fill="#ffffff">M</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+  <title>Mátyás Tóth · Moonrise</title>
+  <defs>
+    <linearGradient id="moonrise" x1="0" y1="0" x2="0" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff1eb"/>
+      <stop offset="0.5" stop-color="#dbc4ff"/>
+      <stop offset="1" stop-color="#a98ef1"/>
+    </linearGradient>
+  </defs>
+  <rect width="16" height="16" rx="3.2" fill="#160e27"/>
+  <path fill="url(#moonrise)" d="
+    M 2.15 2.48
+    Q 2.15 2.3 2.33 2.3 L 3.77 2.3
+    Q 3.95 2.3 4.08 2.424 L 7.87 6.026
+    Q 8 6.15 8.13 6.026 L 11.92 2.424
+    Q 12.05 2.3 12.23 2.3 L 13.67 2.3
+    Q 13.85 2.3 13.85 2.48 L 13.85 13.52
+    Q 13.85 13.7 13.67 13.7 L 9.205 13.7
+    Q 9.025 13.7 9.025 13.52 L 9.025 10.37
+    Q 9.025 10.25 9.145 10.25 L 11.58 10.25
+    Q 11.7 10.25 11.7 10.13 L 11.7 8.27
+    Q 11.7 8.15 11.58 8.15 L 4.42 8.15
+    Q 4.3 8.15 4.3 8.27 L 4.3 10.13
+    Q 4.3 10.25 4.42 10.25 L 6.855 10.25
+    Q 6.975 10.25 6.975 10.37 L 6.975 13.52
+    Q 6.975 13.7 6.795 13.7 L 2.33 13.7
+    Q 2.15 13.7 2.15 13.52 L 2.15 2.48
+    Z
+  "/>
 </svg>
